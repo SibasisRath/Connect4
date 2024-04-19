@@ -1,18 +1,51 @@
 ﻿#include <iostream>
 #include <string>
+#include <vector>
+enum PlayerEnum {
+    RedPlayer,
+    YellowPlayer
+};
+
+class Player {
+private:
+    PlayerEnum playerType;
+    char playerCharacter;
+    std::vector<std::pair<int, int>> occupiedBoxes;
+public:
+    Player(PlayerEnum playerType, char playerCharacter) {
+        this->playerType = playerType;
+        this->playerCharacter = playerCharacter;
+    }
+
+    PlayerEnum GetPlayerType() {
+        return playerType;
+    }
+    char GetPlayerCharacter() {
+        return playerCharacter;
+    }
+
+    void UpdateOccupiedBoxes(int row, int column) {
+        std::pair<int, int> newOccupiedBox = {row,column};
+        occupiedBoxes.push_back(newOccupiedBox);
+    }
+    std::vector<std::pair<int, int>> GetOccupiedBoxes() {
+        return occupiedBoxes;
+    }
+
+};
 
 class Board {
 private:
     static constexpr int ROW = 6;
     static constexpr int COLUMN = 7;
-    static constexpr char placeHolderCharacter = 'O';
+    static constexpr char PLACE_HOLDER_CHARACTER = 'O';
 
     char entireBoard[ROW][COLUMN];
 public:
     Board() {
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COLUMN; j++) {
-                entireBoard[i][j] = placeHolderCharacter;
+                entireBoard[i][j] = PLACE_HOLDER_CHARACTER;
             }
         }
     }
@@ -20,40 +53,65 @@ public:
     void GetBoard() {
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COLUMN; j++) {
-                std::cout << entireBoard[i][j];
+                std::cout << " " << entireBoard[i][j] << " ";
             }
             std::cout << "\n";
         }
     }
 
-    void UpdateBoard(int columnIndex) {
+    bool UpdateBoard(int columnIndex, char playerCharacter) {
+        bool shouldPlayerTurnChange = false;
         for (int i = ROW - 1; i >= 0; i-- ) {
-            if(entireBoard[i][columnIndex] == placeHolderCharacter){
-                entireBoard[i][columnIndex] = 'B';
+            if(entireBoard[i][columnIndex] == PLACE_HOLDER_CHARACTER) {
+                entireBoard[i][columnIndex] = playerCharacter;
+                shouldPlayerTurnChange = true;
                 break;
             }
         }
+        return shouldPlayerTurnChange;
     }
 };
 
 class MainGameLoop {
 private:
     Board board;
+    Player redPlayer;
+    Player yellowPlayer;
+    Player players[2];
+    int counter = 0;
+    bool willPlayerTurnChange = false;
+
+    static constexpr int ASCII_VALUE_FOR_ZERO = 48;
+    static constexpr int ASCII_VALUE_FOR_SIX = 53; //total number of column 7 . So we are taking 0 to 6
+
 public:
+    MainGameLoop() : redPlayer(PlayerEnum::RedPlayer, 'R'),
+        yellowPlayer(PlayerEnum::YellowPlayer, 'Y'),
+        players{ redPlayer, yellowPlayer } {}
     void GameLoop() {
-        while (true) {
+        bool shouldTheGameLoopContinue = true;
+
+        while (shouldTheGameLoopContinue) {
+            std::cout << "\n";
             board.GetBoard();
+            std::cout << std::to_string(players[counter].GetPlayerType()) << " will be placed in column no: ";
             std::string columnNumInput;
             int columnNum;
             std::cin >> columnNumInput;
-            if (columnNumInput.size() == 1 && columnNumInput[0] >= 48 && columnNumInput[0] <= 57) {
-                columnNum = std::stoi(columnNumInput);
-                board.UpdateBoard(columnNum);
-            }
-            else {
+            if (columnNumInput.size() != 1) {
                 continue;
             }
-            
+            else if (columnNumInput[0] >= ASCII_VALUE_FOR_ZERO && columnNumInput[0] <= ASCII_VALUE_FOR_SIX) {
+                columnNum = std::stoi(columnNumInput);
+                willPlayerTurnChange = board.UpdateBoard(columnNum, players[counter].GetPlayerCharacter());
+            }
+
+            if (willPlayerTurnChange) {
+                counter++;
+            }
+            if (counter > 1) {
+                counter = 0;
+            }
         }
     }
 };
@@ -90,22 +148,37 @@ Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.             888
     }
 
     void StartGame() {
-        std::cout << "Press \"S\" or \"s\" to start the Game.\nPress \"Q\" or \"q\" to exit.\n";
         std::string input;
-        std::getline(std::cin, input); // Read a full line input
-        while (input != "S" && input != "s" && input != "Q" && input != "q") {
-            std::cin >> input;
-        }
+        char inputCharacter;
+        bool canStartMainGameLoop = false;
+        bool hasNotGotTheCorrectInputYet = true;
 
-        if (input == "S" || input == "s") {
-            std::cout << "game is starting.";
+        do {
+            std::cout << "Press \"S\" or \"s\" to start the Game.\nPress \"Q\" or \"q\" to exit.\n";
+            std::getline(std::cin, input);
+            if (input.length() != 1) {
+                continue;
+            }
+            inputCharacter = std::tolower(input[0]);
+            switch (inputCharacter) {
+            case 's':
+                std::cout << "game is starting.\n";
+                canStartMainGameLoop = true;
+                hasNotGotTheCorrectInputYet = false;
+                break;
+            case 'q':
+                std::cout << "game is ending.";
+                hasNotGotTheCorrectInputYet = false;
+                break;
+            default:
+                std::cout << "Invalid input. Please try again.\n";
+                break;
+            }
+        } while (hasNotGotTheCorrectInputYet);
+
+        if (canStartMainGameLoop) {
             mainGameLoop.GameLoop();
         }
-
-        if (input == "Q" || input == "q") {
-            std::cout << "game is ending.";
-        }
-       
     }
 
 };
