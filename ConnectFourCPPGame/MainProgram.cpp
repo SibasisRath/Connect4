@@ -1,7 +1,66 @@
 ﻿#include <iostream>
 #include <string>
 
+class Board {
+private:
+    static constexpr int ROW = 6;
+    static constexpr int COLUMN = 7;
+    static constexpr char placeHolderCharacter = 'O';
+
+    char entireBoard[ROW][COLUMN];
+public:
+    Board() {
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COLUMN; j++) {
+                entireBoard[i][j] = placeHolderCharacter;
+            }
+        }
+    }
+
+    void GetBoard() {
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COLUMN; j++) {
+                std::cout << entireBoard[i][j];
+            }
+            std::cout << "\n";
+        }
+    }
+
+    void UpdateBoard(int columnIndex) {
+        for (int i = ROW - 1; i >= 0; i-- ) {
+            if(entireBoard[i][columnIndex] == placeHolderCharacter){
+                entireBoard[i][columnIndex] = 'B';
+                break;
+            }
+        }
+    }
+};
+
+class MainGameLoop {
+private:
+    Board board;
+public:
+    void GameLoop() {
+        while (true) {
+            board.GetBoard();
+            std::string columnNumInput;
+            int columnNum;
+            std::cin >> columnNumInput;
+            if (columnNumInput.size() == 1 && columnNumInput[0] >= 48 && columnNumInput[0] <= 57) {
+                columnNum = std::stoi(columnNumInput);
+                board.UpdateBoard(columnNum);
+            }
+            else {
+                continue;
+            }
+            
+        }
+    }
+};
+
 class Game {
+private:
+    MainGameLoop mainGameLoop;
 public:
     Game() {
         std::cout << R"(
@@ -40,7 +99,7 @@ Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.             888
 
         if (input == "S" || input == "s") {
             std::cout << "game is starting.";
-            Run();
+            mainGameLoop.GameLoop();
         }
 
         if (input == "Q" || input == "q") {
@@ -48,12 +107,6 @@ Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.             888
         }
        
     }
-
-    void Run() {
-
-       
-    }
-
 
 };
 
