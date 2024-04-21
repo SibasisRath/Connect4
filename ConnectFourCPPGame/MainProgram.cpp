@@ -1,26 +1,26 @@
 ﻿#include <iostream>
 #include <string>
 #include <vector>
-enum PlayerEnum {
-    RedPlayer,
-    YellowPlayer
-};
+
+#define ROW 6
+#define COLUMN 7
+#define TOTAL_CONNECT 4
 
 class Player {
 private:
-    PlayerEnum playerType;
+    std::string playerName;
     char playerCharacter;
     std::vector<std::pair<int, int>> occupiedBoxes;
 public:
-    Player(PlayerEnum playerType, char playerCharacter) {
-        this->playerType = playerType;
+    Player(std::string playerName, char playerCharacter) {
+        this->playerName = playerName;
         this->playerCharacter = playerCharacter;
     }
 
-    PlayerEnum GetPlayerType() {
-        return playerType;
+    std::string GetPlayerName() {
+        return playerName;
     }
-    char GetPlayerCharacter() {
+    char GetPlayerCharacter() const {
         return playerCharacter;
     }
 
@@ -28,47 +28,130 @@ public:
         std::pair<int, int> newOccupiedBox = {row,column};
         occupiedBoxes.push_back(newOccupiedBox);
     }
+
     std::vector<std::pair<int, int>> GetOccupiedBoxes() {
         return occupiedBoxes;
     }
-
 };
 
 class Board {
 private:
-    static constexpr int ROW = 6;
-    static constexpr int COLUMN = 7;
     static constexpr char PLACE_HOLDER_CHARACTER = 'O';
 
-    char entireBoard[ROW][COLUMN];
+    std::vector<std::vector<char>> entireBoard;
 public:
     Board() {
-        for (int i = 0; i < ROW; i++) {
-            for (int j = 0; j < COLUMN; j++) {
-                entireBoard[i][j] = PLACE_HOLDER_CHARACTER;
+        entireBoard.resize(ROW, std::vector<char>(COLUMN, PLACE_HOLDER_CHARACTER));
+
+    }
+
+    void PrintBoard() {
+        for (auto row = entireBoard.begin(); row != entireBoard.end(); ++row) {
+            for (auto column = row->begin(); column != row->end(); ++column) {
+                char value = *column;
+                std::cout << value << ' ';
             }
+            std::cout << std::endl; 
         }
     }
 
-    void GetBoard() {
-        for (int i = 0; i < ROW; i++) {
-            for (int j = 0; j < COLUMN; j++) {
-                std::cout << " " << entireBoard[i][j] << " ";
-            }
-            std::cout << "\n";
-        }
+    std::vector<std::vector<char>>& GetBoard() {
+        return entireBoard;
     }
 
-    bool UpdateBoard(int columnIndex, char playerCharacter) {
+    bool UpdateBoard(int columnIndex, Player& player) {
         bool shouldPlayerTurnChange = false;
         for (int i = ROW - 1; i >= 0; i-- ) {
             if(entireBoard[i][columnIndex] == PLACE_HOLDER_CHARACTER) {
-                entireBoard[i][columnIndex] = playerCharacter;
+                entireBoard[i][columnIndex] = player.GetPlayerCharacter();
                 shouldPlayerTurnChange = true;
+                player.UpdateOccupiedBoxes(i, columnIndex);
                 break;
             }
         }
         return shouldPlayerTurnChange;
+    }
+
+};
+
+class Result {
+private:
+    std::vector<std::pair<int, int>> occupiedBoxes;
+    std::vector<std::vector<char>> entireArray;
+    int boardFillCounter = 0;
+public:
+    bool CheckResult(Player &player, Board &board) {
+        occupiedBoxes = player.GetOccupiedBoxes();
+        entireArray = board.GetBoard();
+        char playerCharacter = player.GetPlayerCharacter();
+        bool shouldGameContinue = true;
+        const std::vector<std::pair<int, int>>& playerOccupiedBoxes = player.GetOccupiedBoxes();
+
+        boardFillCounter++;
+
+
+        if (occupiedBoxes.size() >= TOTAL_CONNECT) {
+            for (int i = 0; i < occupiedBoxes.size(); i++) {
+                //std::cout << "We are checking for " << occupiedBoxes[i].first << ", " << occupiedBoxes[i].second << "\n";
+
+                if (COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 1] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 2] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 3] == playerCharacter) {
+                    shouldGameContinue = false;
+                    PrintResult(player.GetPlayerName());
+                    break;
+                }
+                if (ROW - occupiedBoxes[i].first >= TOTAL_CONNECT &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 1][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 2][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 3][occupiedBoxes[i].second] == playerCharacter) {
+                    shouldGameContinue = false;
+                    PrintResult(player.GetPlayerName());
+                    break;
+                }
+
+                if (occupiedBoxes[i].first >= TOTAL_CONNECT && COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first - 1][occupiedBoxes[i].second + 1] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first - 2][occupiedBoxes[i].second + 2] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first - 3][occupiedBoxes[i].second + 3] == playerCharacter) {
+                    shouldGameContinue = false;
+                    PrintResult(player.GetPlayerName());
+                    break;
+                }
+
+                if (ROW - occupiedBoxes[i].first >= TOTAL_CONNECT && COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
+                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 1][occupiedBoxes[i].second + 1] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 2][occupiedBoxes[i].second + 2] == playerCharacter &&
+                    entireArray[occupiedBoxes[i].first + 3][occupiedBoxes[i].second + 3] == playerCharacter) {
+                    shouldGameContinue = false;
+                    PrintResult(player.GetPlayerName());
+                    break;
+                }
+
+            }
+        }
+
+        if (shouldGameContinue && boardFillCounter == ROW * COLUMN) {
+            PrintResult("NoOne");
+            shouldGameContinue = false;
+        }
+       // std::cout << "5entered the check loop successfully.\n";
+        return shouldGameContinue;
+    }
+
+    void PrintResult(std::string playerName) {
+
+        if (playerName == "NoOne") {
+            std::cout << "game ended.\n It is a draw.";
+        }
+        else {
+            std::cout << "game ended.\nCongratulation " << playerName;
+        }  
     }
 };
 
@@ -79,34 +162,35 @@ private:
     Player yellowPlayer;
     Player players[2];
     int counter = 0;
-    bool willPlayerTurnChange = false;
 
-    static constexpr int ASCII_VALUE_FOR_ZERO = 48;
-    static constexpr int ASCII_VALUE_FOR_SIX = 53; //total number of column 7 . So we are taking 0 to 6
+    Result result;
+
+    static constexpr int ASCII_VALUE_FOR_ZERO = '0';
+    static constexpr int ASCII_VALUE_FOR_SIX = '6'; //total number of column 7 . So we are taking 0 to 6
 
 public:
-    MainGameLoop() : redPlayer(PlayerEnum::RedPlayer, 'R'),
-        yellowPlayer(PlayerEnum::YellowPlayer, 'Y'),
+    MainGameLoop() : redPlayer("Red_Player", 'R'),
+        yellowPlayer("Yellow_Player", 'Y'),
         players{ redPlayer, yellowPlayer } {}
+
     void GameLoop() {
         bool shouldTheGameLoopContinue = true;
-
+        bool willPlayerTurnChange = false;
         while (shouldTheGameLoopContinue) {
             std::cout << "\n";
-            board.GetBoard();
-            std::cout << std::to_string(players[counter].GetPlayerType()) << " will be placed in column no: ";
+            board.PrintBoard();
+            std::cout << players[counter].GetPlayerName() << " will be placed in column no: ";
             std::string columnNumInput;
             int columnNum;
             std::cin >> columnNumInput;
-            if (columnNumInput.size() != 1) {
-                continue;
-            }
-            else if (columnNumInput[0] >= ASCII_VALUE_FOR_ZERO && columnNumInput[0] <= ASCII_VALUE_FOR_SIX) {
+
+            if (columnNumInput.length() == 1 && columnNumInput[0] >= ASCII_VALUE_FOR_ZERO && columnNumInput[0] <= ASCII_VALUE_FOR_SIX) {
                 columnNum = std::stoi(columnNumInput);
-                willPlayerTurnChange = board.UpdateBoard(columnNum, players[counter].GetPlayerCharacter());
+                willPlayerTurnChange = board.UpdateBoard(columnNum, players[counter]);
             }
 
             if (willPlayerTurnChange) {
+                shouldTheGameLoopContinue = result.CheckResult(players[counter], board);
                 counter++;
             }
             if (counter > 1) {
@@ -153,7 +237,8 @@ Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.             888
         bool canStartMainGameLoop = false;
         bool hasNotGotTheCorrectInputYet = true;
 
-        do {
+        while (hasNotGotTheCorrectInputYet)
+        {
             std::cout << "Press \"S\" or \"s\" to start the Game.\nPress \"Q\" or \"q\" to exit.\n";
             std::getline(std::cin, input);
             if (input.length() != 1) {
@@ -174,7 +259,7 @@ Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.             888
                 std::cout << "Invalid input. Please try again.\n";
                 break;
             }
-        } while (hasNotGotTheCorrectInputYet);
+        } 
 
         if (canStartMainGameLoop) {
             mainGameLoop.GameLoop();
