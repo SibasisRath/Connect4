@@ -21,7 +21,7 @@ public:
     std::string GetPlayerName() const {
         return playerName;
     }
-    char& GetPlayerCharacter() {
+    char GetPlayerCharacter() const{
         return playerCharacter;
     }
 
@@ -88,138 +88,77 @@ public:
 class WinningConditionChecker {
 protected:
     const int maxCounter = 3;
+
+    bool checkDirection(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board,
+        int rowOffset,
+        int colOffset) {
+        for (const auto& box : occupiedBoxes) {
+            int row = box.first;
+            int col = box.second;
+
+            // Check if there's enough space in the given direction
+            if (row + (TOTAL_CONNECT - 1) * rowOffset < ROW &&
+                row + (TOTAL_CONNECT - 1) * rowOffset >= 0 &&
+                col + (TOTAL_CONNECT - 1) * colOffset < COLUMN &&
+                col + (TOTAL_CONNECT - 1) * colOffset >= 0) {
+                bool win = true;
+                for (int j = 0; j < TOTAL_CONNECT; j++) {
+                    if (board.GetCharacter(row + j * rowOffset, col + j * colOffset) != playerCharacter) {
+                        win = false;
+                        break;
+                    }
+                }
+
+                if (win) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 public:
     virtual ~WinningConditionChecker() = default;
-    virtual bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes, char playerCharacter, const Board& board) = 0;
+    virtual bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board) = 0;
 };
 
 class HorizontalChecker : public WinningConditionChecker {
-private:
-    bool isItAWin = false;
-    int counter = 0;
 public:
     bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
         char playerCharacter,
         const Board& board) override {
-        for (const auto& box : occupiedBoxes) {
-            int row = box.first;
-            int col = box.second;
-
-            // Check if there's enough space to the right
-            if (COLUMN - col >= TOTAL_CONNECT) {
-                bool horizontalWin = true;
-                for (int j = 1; j < TOTAL_CONNECT; j++) {
-                    if (board.GetCharacter(row, col + j) != playerCharacter) {
-                        horizontalWin = false;
-                        break;
-                    }
-                }
-
-                if (horizontalWin) {
-                    isItAWin = true;
-                    break;
-                }
-            }
-        }
-        return isItAWin;
+        return checkDirection(occupiedBoxes, playerCharacter, board, 0, 1);
     }
 };
+
 class VerticalChecker : public WinningConditionChecker {
-private:
-    bool isItAWin = false;
-    int counter = 0;
 public:
     bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
         char playerCharacter,
         const Board& board) override {
-        for (const auto& box : occupiedBoxes) {
-            int row = box.first;
-            int col = box.second;
-
-            // Check if there's enough space to the top
-            if (ROW - box.first >= TOTAL_CONNECT) {
-                bool verticalalWin = true;
-                for (int j = 1; j < TOTAL_CONNECT; j++) {
-                    if (board.GetCharacter(row + j, col) != playerCharacter) {
-                        verticalalWin = false;
-                        break;
-                    }
-                }
-
-                if (verticalalWin) {
-                    isItAWin = true;
-                    break;
-                }
-            }
-        }
-
-        return isItAWin;
+        return checkDirection(occupiedBoxes, playerCharacter, board, 1, 0);
     }
 };
 
-class ForwardSlashChecker : public WinningConditionChecker {
-private:
-    bool isItAWin = false;
-    int counter = 0;
+class PositiveSlashChecker : public WinningConditionChecker {
 public:
     bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
         char playerCharacter,
         const Board& board) override {
-        for (const auto& box : occupiedBoxes) {
-            int row = box.first;
-            int col = box.second;
-
-            // Check if there's enough space to the top
-            if (box.first >= TOTAL_CONNECT && COLUMN - box.second >= TOTAL_CONNECT) {
-                bool forwardSlashlWin = true;
-                for (int j = 1; j < TOTAL_CONNECT; j++) {
-                    if (board.GetCharacter(box.first - j, box.second + j) != playerCharacter) {
-                        forwardSlashlWin = false;
-                        break;
-                    }
-                }
-
-                if (forwardSlashlWin) {
-                    isItAWin = true;
-                    break;
-                }
-            }
-        }
-
-        return isItAWin;
+        return checkDirection(occupiedBoxes, playerCharacter, board, 1, 1);
     }
 };
 
-class BackwardSlashChecker : public WinningConditionChecker {
-private:
-    bool isItAWin = false;
-    int counter = 0;
+class NegetiveSlashChecker : public WinningConditionChecker {
 public:
     bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
         char playerCharacter,
         const Board& board) override {
-        for (const auto& box : occupiedBoxes) {
-            int row = box.first;
-            int col = box.second;
-
-            // Check if there's enough space to the top
-            if (ROW - box.first >= TOTAL_CONNECT && COLUMN - box.second >= TOTAL_CONNECT) {
-                bool backwardSlashlWin = true;
-                for (int j = 1; j < TOTAL_CONNECT; j++) {
-                    if (board.GetCharacter(box.first + j, box.second + j) != playerCharacter) {
-                        backwardSlashlWin = false;
-                        break;
-                    }
-                }
-
-                if (backwardSlashlWin) {
-                    isItAWin = true;
-                    break;
-                }
-            }
-        }
-
-        return isItAWin;
+        return checkDirection(occupiedBoxes, playerCharacter, board, 1, -1);
     }
 };
 
@@ -233,8 +172,8 @@ public:
     ResultChecker(){
         winningConditionCheckers.emplace_back(std::make_unique<HorizontalChecker>());
         winningConditionCheckers.emplace_back(std::make_unique<VerticalChecker>());
-        winningConditionCheckers.emplace_back(std::make_unique<ForwardSlashChecker>());
-        winningConditionCheckers.emplace_back(std::make_unique<BackwardSlashChecker>());
+        winningConditionCheckers.emplace_back(std::make_unique<PositiveSlashChecker>());
+        winningConditionCheckers.emplace_back(std::make_unique<NegetiveSlashChecker>());
     }
     bool CheckResult(Player &player, Board &board) {
         occupiedBoxes = player.GetOccupiedBoxes();
