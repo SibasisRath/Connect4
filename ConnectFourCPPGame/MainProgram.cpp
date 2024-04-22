@@ -274,9 +274,6 @@ private:
 
     ResultChecker result;
 
-    static constexpr int ASCII_VALUE_FOR_ZERO = '0';
-    static constexpr int ASCII_VALUE_FOR_SIX = '6';
-
 public:
     MainGameLoop() : redPlayer("Red_Player", 'R'),
         yellowPlayer("Yellow_Player", 'Y'),
