@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #define ROW 6
 #define COLUMN 7
@@ -17,10 +18,10 @@ public:
         this->playerCharacter = playerCharacter;
     }
 
-    std::string GetPlayerName() {
+    std::string GetPlayerName() const {
         return playerName;
     }
-    char GetPlayerCharacter() const {
+    char& GetPlayerCharacter() {
         return playerCharacter;
     }
 
@@ -29,7 +30,7 @@ public:
         occupiedBoxes.push_back(newOccupiedBox);
     }
 
-    std::vector<std::pair<int, int>> GetOccupiedBoxes() {
+    std::vector<std::pair<int, int>> GetOccupiedBoxes () const{
         return occupiedBoxes;
     }
 };
@@ -37,15 +38,14 @@ public:
 class Board {
 private:
     static constexpr char PLACE_HOLDER_CHARACTER = 'O';
-
     std::vector<std::vector<char>> entireBoard;
+
 public:
     Board() {
         entireBoard.resize(ROW, std::vector<char>(COLUMN, PLACE_HOLDER_CHARACTER));
-
     }
 
-    void PrintBoard() {
+    void PrintBoard() const {
         for (auto row = entireBoard.begin(); row != entireBoard.end(); ++row) {
             for (auto column = row->begin(); column != row->end(); ++column) {
                 char value = *column;
@@ -55,106 +55,215 @@ public:
         }
     }
 
-    std::vector<std::vector<char>>& GetBoard() {
-        return entireBoard;
-    }
-
     bool UpdateBoard(int columnIndex, Player& player) {
-        bool shouldPlayerTurnChange = false;
+        bool shouldPlayerChangeTurn = false;
         for (int i = ROW - 1; i >= 0; i-- ) {
             if(entireBoard[i][columnIndex] == PLACE_HOLDER_CHARACTER) {
                 entireBoard[i][columnIndex] = player.GetPlayerCharacter();
-                shouldPlayerTurnChange = true;
+                shouldPlayerChangeTurn = true;
                 player.UpdateOccupiedBoxes(i, columnIndex);
                 break;
             }
         }
-        return shouldPlayerTurnChange;
+        return shouldPlayerChangeTurn;
     }
-
+    // public get value method for not sharing the board with the result class.
+    char GetCharacter(int row, int column) const{
+        return entireBoard[row][column];
+    }
 };
 
-class Result {
+class ResultPrinter {
+public:
+    static void PrintResult(const std::string& playerName) {
+        if (playerName == "NoOne") {
+            std::cout << "Game ended. It is a draw." << std::endl;
+        }
+        else {
+            std::cout << "Game ended. Congratulations " << playerName << "!" << std::endl;
+        }
+    }
+};
+
+class WinningConditionChecker {
+protected:
+    const int maxCounter = 3;
+public:
+    virtual ~WinningConditionChecker() = default;
+    virtual bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes, char playerCharacter, const Board& board) = 0;
+};
+
+class HorizontalChecker : public WinningConditionChecker {
+private:
+    bool isItAWin = false;
+    int counter = 0;
+public:
+    bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board) override {
+        for (const auto& box : occupiedBoxes) {
+            int row = box.first;
+            int col = box.second;
+
+            // Check if there's enough space to the right
+            if (COLUMN - col >= TOTAL_CONNECT) {
+                bool horizontalWin = true;
+                for (int j = 1; j < TOTAL_CONNECT; j++) {
+                    if (board.GetCharacter(row, col + j) != playerCharacter) {
+                        horizontalWin = false;
+                        break;
+                    }
+                }
+
+                if (horizontalWin) {
+                    isItAWin = true;
+                    break;
+                }
+            }
+        }
+        return isItAWin;
+    }
+};
+class VerticalChecker : public WinningConditionChecker {
+private:
+    bool isItAWin = false;
+    int counter = 0;
+public:
+    bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board) override {
+        for (const auto& box : occupiedBoxes) {
+            int row = box.first;
+            int col = box.second;
+
+            // Check if there's enough space to the top
+            if (ROW - box.first >= TOTAL_CONNECT) {
+                bool verticalalWin = true;
+                for (int j = 1; j < TOTAL_CONNECT; j++) {
+                    if (board.GetCharacter(row + j, col) != playerCharacter) {
+                        verticalalWin = false;
+                        break;
+                    }
+                }
+
+                if (verticalalWin) {
+                    isItAWin = true;
+                    break;
+                }
+            }
+        }
+
+        return isItAWin;
+    }
+};
+
+class ForwardSlashChecker : public WinningConditionChecker {
+private:
+    bool isItAWin = false;
+    int counter = 0;
+public:
+    bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board) override {
+        for (const auto& box : occupiedBoxes) {
+            int row = box.first;
+            int col = box.second;
+
+            // Check if there's enough space to the top
+            if (box.first >= TOTAL_CONNECT && COLUMN - box.second >= TOTAL_CONNECT) {
+                bool forwardSlashlWin = true;
+                for (int j = 1; j < TOTAL_CONNECT; j++) {
+                    if (board.GetCharacter(box.first - j, box.second + j) != playerCharacter) {
+                        forwardSlashlWin = false;
+                        break;
+                    }
+                }
+
+                if (forwardSlashlWin) {
+                    isItAWin = true;
+                    break;
+                }
+            }
+        }
+
+        return isItAWin;
+    }
+};
+
+class BackwardSlashChecker : public WinningConditionChecker {
+private:
+    bool isItAWin = false;
+    int counter = 0;
+public:
+    bool Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+        char playerCharacter,
+        const Board& board) override {
+        for (const auto& box : occupiedBoxes) {
+            int row = box.first;
+            int col = box.second;
+
+            // Check if there's enough space to the top
+            if (ROW - box.first >= TOTAL_CONNECT && COLUMN - box.second >= TOTAL_CONNECT) {
+                bool backwardSlashlWin = true;
+                for (int j = 1; j < TOTAL_CONNECT; j++) {
+                    if (board.GetCharacter(box.first + j, box.second + j) != playerCharacter) {
+                        backwardSlashlWin = false;
+                        break;
+                    }
+                }
+
+                if (backwardSlashlWin) {
+                    isItAWin = true;
+                    break;
+                }
+            }
+        }
+
+        return isItAWin;
+    }
+};
+
+class ResultChecker {
 private:
     std::vector<std::pair<int, int>> occupiedBoxes;
-    std::vector<std::vector<char>> entireArray;
     int boardFillCounter = 0;
+    ResultPrinter resultPrinter;
+    std::vector<std::unique_ptr<WinningConditionChecker>> winningConditionCheckers;
 public:
+    ResultChecker(){
+        winningConditionCheckers.emplace_back(std::make_unique<HorizontalChecker>());
+        winningConditionCheckers.emplace_back(std::make_unique<VerticalChecker>());
+        winningConditionCheckers.emplace_back(std::make_unique<ForwardSlashChecker>());
+        winningConditionCheckers.emplace_back(std::make_unique<BackwardSlashChecker>());
+    }
     bool CheckResult(Player &player, Board &board) {
         occupiedBoxes = player.GetOccupiedBoxes();
-        entireArray = board.GetBoard();
         char playerCharacter = player.GetPlayerCharacter();
         bool shouldGameContinue = true;
         const std::vector<std::pair<int, int>>& playerOccupiedBoxes = player.GetOccupiedBoxes();
 
         boardFillCounter++;
 
-
         if (occupiedBoxes.size() >= TOTAL_CONNECT) {
-            for (int i = 0; i < occupiedBoxes.size(); i++) {
-                //std::cout << "We are checking for " << occupiedBoxes[i].first << ", " << occupiedBoxes[i].second << "\n";
-
-                if (COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 1] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 2] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second + 3] == playerCharacter) {
+            for (const auto& winningConditionChecker : winningConditionCheckers) {
+                if (winningConditionChecker->Check(occupiedBoxes, playerCharacter, board)) {
                     shouldGameContinue = false;
-                    PrintResult(player.GetPlayerName());
+                    resultPrinter.PrintResult(player.GetPlayerName());
                     break;
                 }
-                if (ROW - occupiedBoxes[i].first >= TOTAL_CONNECT &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 1][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 2][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 3][occupiedBoxes[i].second] == playerCharacter) {
-                    shouldGameContinue = false;
-                    PrintResult(player.GetPlayerName());
-                    break;
-                }
-
-                if (occupiedBoxes[i].first >= TOTAL_CONNECT && COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first - 1][occupiedBoxes[i].second + 1] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first - 2][occupiedBoxes[i].second + 2] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first - 3][occupiedBoxes[i].second + 3] == playerCharacter) {
-                    shouldGameContinue = false;
-                    PrintResult(player.GetPlayerName());
-                    break;
-                }
-
-                if (ROW - occupiedBoxes[i].first >= TOTAL_CONNECT && COLUMN - occupiedBoxes[i].second >= TOTAL_CONNECT &&
-                    entireArray[occupiedBoxes[i].first][occupiedBoxes[i].second] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 1][occupiedBoxes[i].second + 1] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 2][occupiedBoxes[i].second + 2] == playerCharacter &&
-                    entireArray[occupiedBoxes[i].first + 3][occupiedBoxes[i].second + 3] == playerCharacter) {
-                    shouldGameContinue = false;
-                    PrintResult(player.GetPlayerName());
-                    break;
-                }
-
             }
         }
 
         if (shouldGameContinue && boardFillCounter == ROW * COLUMN) {
-            PrintResult("NoOne");
+            resultPrinter.PrintResult("NoOne");
             shouldGameContinue = false;
         }
-       // std::cout << "5entered the check loop successfully.\n";
+
         return shouldGameContinue;
-    }
-
-    void PrintResult(std::string playerName) {
-
-        if (playerName == "NoOne") {
-            std::cout << "game ended.\n It is a draw.";
-        }
-        else {
-            std::cout << "game ended.\nCongratulation " << playerName;
-        }  
     }
 };
 
+// This class is running the main game loop.
 class MainGameLoop {
 private:
     Board board;
@@ -163,10 +272,10 @@ private:
     Player players[2];
     int counter = 0;
 
-    Result result;
+    ResultChecker result;
 
     static constexpr int ASCII_VALUE_FOR_ZERO = '0';
-    static constexpr int ASCII_VALUE_FOR_SIX = '6'; //total number of column 7 . So we are taking 0 to 6
+    static constexpr int ASCII_VALUE_FOR_SIX = '6';
 
 public:
     MainGameLoop() : redPlayer("Red_Player", 'R'),
@@ -184,9 +293,29 @@ public:
             int columnNum;
             std::cin >> columnNumInput;
 
-            if (columnNumInput.length() == 1 && columnNumInput[0] >= ASCII_VALUE_FOR_ZERO && columnNumInput[0] <= ASCII_VALUE_FOR_SIX) {
+            try {
                 columnNum = std::stoi(columnNumInput);
-                willPlayerTurnChange = board.UpdateBoard(columnNum, players[counter]);
+
+                // Check if columnNum is between 0 and 6
+                if (columnNum >= 0 && columnNum <= 6) {
+                    // Valid input
+                    willPlayerTurnChange = board.UpdateBoard(columnNum, players[counter]);
+                }
+                else {
+                    // Invalid input
+                    std::cout << "Input is not between 0 and 6." << std::endl;
+                    continue;
+                }
+            }
+            catch (const std::invalid_argument& e) {
+                // Invalid input
+                std::cout << "Invalid input. Please enter a valid number." << std::endl;
+                continue;
+            }
+            catch (const std::out_of_range& e) {
+                // Input out of range
+                std::cout << "Input is out of range." << std::endl;
+                continue;
             }
 
             if (willPlayerTurnChange) {
@@ -200,6 +329,7 @@ public:
     }
 };
 
+//This class is responsible for game introduction.
 class Game {
 private:
     MainGameLoop mainGameLoop;
