@@ -1,0 +1,7 @@
+#include "HorizontalChecker.h"
+
+bool HorizontalChecker::Check(const std::vector<std::pair<int, int>>& occupiedBoxes,
+    char playerCharacter,
+    const Board& board) {
+    return checkDirection(occupiedBoxes, playerCharacter, board, 0, 1);
+}

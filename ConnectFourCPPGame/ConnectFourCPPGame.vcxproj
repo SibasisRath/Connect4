@@ -129,7 +129,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Board.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="HorizontalChecker.cpp" />
+    <ClCompile Include="MainGameLoop.cpp" />
     <ClCompile Include="MainProgram.cpp" />
+    <ClCompile Include="NegetiveSlashChecker.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PositiveSlashChecker.cpp" />
+    <ClCompile Include="ResultChecker.cpp" />
+    <ClCompile Include="ResultPrinter.cpp" />
+    <ClCompile Include="VerticalChecker.cpp" />
+    <ClCompile Include="WinningConditionChecker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Board.h" />
+    <ClInclude Include="DefineValues.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="HorizontalChecker.h" />
+    <ClInclude Include="MainGameLoop.h" />
+    <ClInclude Include="NegetiveSlashChecker.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PositiveSlashChecker.h" />
+    <ClInclude Include="ResultChecker.h" />
+    <ClInclude Include="ResultPrinter.h" />
+    <ClInclude Include="VerticalChecker.h" />
+    <ClInclude Include="WinningConditionChecker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
