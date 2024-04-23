@@ -18,5 +18,76 @@
     <ClCompile Include="MainProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Board.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultPrinter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinningConditionChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizontalChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VerticalChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PositiveSlashChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NegetiveSlashChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultChecker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainGameLoop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Player.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Board.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DefineValues.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultPrinter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinningConditionChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizontalChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VerticalChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PositiveSlashChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NegetiveSlashChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultChecker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainGameLoop.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
