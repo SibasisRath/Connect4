@@ -1,0 +1,30 @@
+# Compiler settings
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
+
+# Source files
+SOURCES = Board.cpp Game.cpp HorizontalChecker.cpp MainGameLoop.cpp MainProgram.cpp NegetiveSlashChecker.cpp Player.cpp PositiveSlashChecker.cpp ResultChecker.cpp ResultPrinter.cpp VerticalChecker.cpp WinnerConditionChecker.cpp
+
+# Object files
+OBJECTS = $(SOURCES:.cpp=.o)
+
+# Executable name
+EXECUTABLE = connectfour
+
+# Default target
+all : $(EXECUTABLE)
+
+# Linking
+$(EXECUTABLE) : $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(EXECUTABLE)
+
+# Compilation
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean target
+clean :
+	rm -f $(OBJECTS) $(EXECUTABLE)
+
+# Phony targets
+.PHONY: all clean
